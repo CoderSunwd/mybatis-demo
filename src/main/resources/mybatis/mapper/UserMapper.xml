@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+ <!-- 
+	 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的。
+	 例如namespace="com.example.demo.mapper.UserMapper"就是com.example.demo.mapper(包名)+UserMapper(UserMapper.xml文件去除后缀)。 
+ -->
+
+<mapper namespace="com.example.demo.mapper.UserMapper" >
+    <resultMap id="BaseResultMap" type="com.example.demo.entity.UserEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="userName" property="userName" jdbcType="VARCHAR" />
+        <result column="passWord" property="passWord" jdbcType="VARCHAR" />
+        <result column="user_sex" property="userSex" javaType="com.example.demo.enums.UserSexEnum"/>
+        <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+        id, userName, passWord, user_sex, nick_name
+    </sql>
+
+    <select id="getAll" resultMap="BaseResultMap"  >
+       SELECT 
+       <include refid="Base_Column_List" />
+	   FROM users
+    </select>
+    
+    <select id="getAllUsers" resultType="UserEntity">
+       SELECT 
+       	 id, userName, passWord, user_sex as userSex, nick_name as nickName
+	   FROM users
+    </select>
+    
+     <!--	
+   		在select标签中编写查询的SQL语句， 设置select标签的id属性为getOne，id属性值必须是唯一的，不能够重复。
+  		使用parameterType属性指明查询时使用的参数类型，resultType属性指明查询返回的结果集类型。
+   		resultType="com.example.demo.entity.UserEntity"就表示将查询结果封装成一个User类的对象返回。
+   		User类就是users表所对应的实体类
+     -->
+    <select id="getOne" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        SELECT 
+       <include refid="Base_Column_List" />
+	   FROM users
+	   WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="UserEntity" >
+       INSERT INTO 
+       		users
+       		(userName,passWord,user_sex) 
+       	VALUES
+       		(#{userName}, #{passWord}, #{userSex})
+    </insert>
+     
+    <insert id="insertAndReturnKey" parameterType="UserEntity" 
+    	useGeneratedKeys="true" keyProperty="id">
+       INSERT INTO 
+       		users
+       		(userName,passWord,user_sex) 
+       VALUES
+       		(#{userName}, #{passWord}, #{userSex})
+    </insert>
+
+	<insert id="insertUsers" useGeneratedKeys="true" keyProperty="id">
+		insert into users (userName,passWord,user_sex) values
+		<foreach item="item" collection="list" separator=",">
+			(#{item.userName}, #{item.passWord}, #{item.userSex})
+		</foreach>
+	</insert>
+    
+    <update id="update" parameterType="UserEntity" >
+       UPDATE 
+       		users 
+       SET 
+       	<if test="userName != null">userName = #{userName},</if>
+       	<if test="passWord != null">passWord = #{passWord},</if>
+       	<if test="userSex != null">user_sex = #{userSex},</if>
+       	nick_name = #{nickName}
+       WHERE 
+       		id = #{id}
+    </update>
+    
+    <delete id="delete" parameterType="java.lang.Long" >
+       DELETE FROM
+       		 users 
+       WHERE 
+       		 id =#{id}
+    </delete>
+
+</mapper>
